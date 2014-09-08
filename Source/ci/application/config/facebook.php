@@ -6,3 +6,6 @@ $config['appsecret'] = '093b0b371673a8b831dcc87d62fee7b0';
 
 //*** Get permission
 $config['scope'] = $scope = array('email', 'user_birthday');
+
+//*** Login url
+$config['login_url'] = 'http://localhost/mfb/index.php/login/';

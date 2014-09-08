@@ -21,12 +21,12 @@ class Login extends CI_Controller {
         
         //*** Check if user has logged
         if ($this->session->userdata('user_token')) {
-            redirect('map');
+            redirect('fanpage/index');
         }
     }
     
     public function index() {
-        $helper = new FacebookRedirectLoginHelper('http://localhost/timchoi/index.php/login/');
+        $helper = new FacebookRedirectLoginHelper($this->config->item('login_url'));
         try {
             $session = $helper->getSessionFromRedirect();
         } catch(FacebookRequestException $ex) {
@@ -42,7 +42,8 @@ class Login extends CI_Controller {
             $this->long_lived_token = $long_lived_session->getToken();
             
             //*** Set session for user
-            $this->session->set_userdata('user_token',$session->getToken());
+            $this->session->set_userdata('user_token', $session->getToken());
+            $this->session->set_userdata('user_id', $session->getUserId());
             
             //*** Call api to get user info
             $request = new FacebookRequest($session, 'GET', '/me');
@@ -55,8 +56,9 @@ class Login extends CI_Controller {
                     // Register susseccfully
                 }
             }
+            
             //*** Redirect to home
-            redirect('map');
+            redirect('fanpage/index');
             
         } else { // Not logged
             // *** Please define the permission in config/facebook.php

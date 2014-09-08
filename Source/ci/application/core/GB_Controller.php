@@ -16,7 +16,12 @@ class GB_Controller extends CI_Controller
         session_start();
         
         //*** Initializing facebook app
-        FacebookSession::setDefaultApplication($this->config->item('appid'), $this->config->item('appsecret'));//Will be set in constant
+        FacebookSession::setDefaultApplication($this->config->item('appid'), $this->config->item('appsecret'));
+        
+        //*** Check login
+        if (!$this->session->userdata('user_token')) {
+            redirect('login');
+        }        
     }
 
     /*
