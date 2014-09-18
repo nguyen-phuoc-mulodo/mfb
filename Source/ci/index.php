@@ -201,8 +201,11 @@ if (defined('ENVIRONMENT'))
  */
 
 // Composer Autoloader
-require FCPATH . 'vendor/autoload.php';      
-        
+require FCPATH . 'vendor/autoload.php';
+
+// Require a constant file
+require_once APPPATH.'helpers/constant.php';
+
 require_once BASEPATH.'core/CodeIgniter.php';
 /* End of file index.php */
 /* Location: ./index.php */

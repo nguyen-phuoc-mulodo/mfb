@@ -6,7 +6,7 @@ use Facebook\GraphUserPage;
 
 class Fanpage extends GB_Controller
 {
-    private $page_id = '121809317986153';
+    private $page_id = '';
     private $page_session = null;
     private $page_token = '';
     
@@ -17,20 +17,19 @@ class Fanpage extends GB_Controller
         $this->load->model('fanpage_model');
         //***Load Libraries
         $this->load->library('my_upload');
-        
-        define('FB_APP_ID', '695082060564419');
-        define('FB_APP_SECRET', '093b0b371673a8b831dcc87d62fee7b0');
 
-        FacebookSession::setDefaultApplication(FB_APP_ID, FB_APP_SECRET);
-        $page_session = new FacebookSession('CAAJ4LGdPR8MBAHDVTTZBs7pEmPSukvJnecEnv2My8N5ajccWwAGCBE437IsqSXoFTEpXNYgafHKc38TSBRZCJZALTOIo2CQ3YQ4gdgWR2AgtPrt84tpfdBYVi6ZCO07mEZCkCNTQbEGI2Mx34EhzEhKoBHWlW1aG0IwUKKCzebZCP3abSV15JZB');
-        $this->page_session = $page_session->getLongLivedSession();
+        FacebookSession::setDefaultApplication($this->config->item('appid'), $this->config->item('appsecret'));
+        //$page_session = new FacebookSession('CAAJ4LGdPR8MBAHDVTTZBs7pEmPSukvJnecEnv2My8N5ajccWwAGCBE437IsqSXoFTEpXNYgafHKc38TSBRZCJZALTOIo2CQ3YQ4gdgWR2AgtPrt84tpfdBYVi6ZCO07mEZCkCNTQbEGI2Mx34EhzEhKoBHWlW1aG0IwUKKCzebZCP3abSV15JZB');
+        //$this->page_session = $page_session->getLongLivedSession();
     }
     public function index() {
         try 
         {
             //*** Get Page list of user
-            $data['page_list'] = $this->fanpage_model->get_page_list($this->session->userdata('user_token'));
-            $data['user_pages'] = $this->get_user_page_using_api();
+            $data['page_list'] = array();
+            $data['user_pages'] = array();
+            $data['page_list'] = $this->fanpage_model->get_page_list($this->session->userdata('user_id')); //List of fanpage added to DB of a user
+            $data['user_pages'] = $this->get_user_page_using_api(); //Facebook pages of a user. These pages are not havent't added to DB
             
             $this->load->view('user_dashboard', $data);         
         } catch (Exception $ex) {
@@ -244,6 +243,23 @@ class Fanpage extends GB_Controller
             redirect('fanpage/index');
         }
     }
+    /*
+     * @Param: string
+     * @Return void
+     */
+    public function delete_fanpage($fanpage_id) {
+        try {
+            
+            if ($this->fanpage_model->delete_fanpage($fanpage_id)) {
+                $this->session->set_flashdata('success',REMOVED_FANPAGE);
+            }else {
+                $this->session->set_flashdata('error',ERROR_REMOVED_FANPAGE);
+            }
+            $this->load->view('fanpage/index');
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+    }
     
     //*** Private function
     private function get_param() {
@@ -275,17 +291,21 @@ class Fanpage extends GB_Controller
         
         //*** Check if invalid
         if ($user_session->validate()) {
-            $request = (new FacebookRequest($user_session, 'GET', '/me/accounts'))->execute();
+            $request = (
+                    new FacebookRequest($user_session, 
+                    'GET', 
+                    '/me/accounts',
+                    array('name', 'id', 'access_token',)
+                ))->execute();
             $response = $request->getGraphObject();
             
             //*** Get array of Page objects
             $pages = $response->getPropertyAsArray('data');
-            
             foreach ($pages as $item) {
                 $item = $item->asArray(); //Convert oject to array
                 if (in_array('CREATE_CONTENT', $item['perms'])) {
                     //*** Check if fanpage has added in DB
-                    if ( !$this->fanpage_model->check_exist($item['id'])) {
+                    if ( !$this->fanpage_model->check_exist($item['id'], $this->session->userdata('user_id'))) {
                         $result[] = array(
                             'name' => $item['name'],
                             'id' => $item['id'],
@@ -293,6 +313,7 @@ class Fanpage extends GB_Controller
                         );
                     }
                 }
+                
             }
         }
         return $result;
@@ -301,17 +322,36 @@ class Fanpage extends GB_Controller
     private function get_fanpage($page_id) {
         $pages = $this->get_user_page_using_api();
         foreach ($pages as $item) {
-            if ($page_id = $item['id']) {
+            if ($page_id == $item['id']) {
+                $item['cover'] = $this->get_page_cover_url($item['id']);
                 return $item;
             }
         }
         return null;
     }
     
+    //***API Facebook
+    private function get_page_cover_url($page_id) {
+        $user_session = new FacebookSession($this->session->userdata('user_token'));
+        
+        if ($user_session->validate()) {
+            $request = (new FacebookRequest($user_session, 'GET', '/'. $page_id))->execute();
+            $response = $request->getGraphObject()->asArray();
+            
+            if (isset($response['cover'])) {
+                return $response['cover']->source;
+            }else {
+                return '';
+            }
+        }        
+    }
+    
     //*** TEST
     function test() {
         echo "<pre>";
         echo __CLASS__ .'->'. __FUNCTION__;
+        $r = $this->get_user_page_using_api('121809317986153');
+        print_r($r);
     }
 }
 

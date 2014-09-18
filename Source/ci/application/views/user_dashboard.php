@@ -44,28 +44,14 @@
                 <div class="col-md-12">
                     <p class="clearfix"><a href="#" id="add-new-fanpage" class="btn btn-primary pull-right" data-toggle="modal" data-target="#myModal">Add new fanpage</a></p>
                 </div>        
-                
-                <div class="col-md-4 fanpage">
-                    <a href="#"><img class="img-responsive" src="<?php echo base_url(); ?>assets/uploads/fanpage.jpg"/></a>
-                    <a href="#"><h3>Geekboy - TimChoi</h3></a>
-                </div><!--/.fanpage-->
-                <div class="col-md-4 fanpage">
-                    <a href="#"><img class="img-responsive" src="<?php echo base_url(); ?>assets/uploads/fanpage.jpg"/></a>
-                    <a href="#"><h3>Geekboy - TimChoi</h3></a>
-                </div><!--/.fanpage-->
-                <div class="col-md-4 fanpage">
-                    <a href="#"><img class="img-responsive" src="<?php echo base_url(); ?>assets/uploads/fanpage.jpg"/></a>
-                    <a href="#"><h3>Geekboy - TimChoi</h3></a>
-                </div><!--/.fanpage-->
-                <div class="col-md-4 fanpage">
-                    <a href="#"><img class="img-responsive" src="<?php echo base_url(); ?>assets/uploads/fanpage.jpg"/></a>
-                    <a href="#"><h3>Geekboy - TimChoi</h3></a>
-                </div><!--/.fanpage-->
-                <div class="col-md-4 fanpage">
-                    <a href="#"><img class="img-responsive" src="<?php echo base_url(); ?>assets/uploads/fanpage.jpg"/></a>
-                    <a href="#"><h3>Geekboy - TimChoi</h3></a>
-                </div><!--/.fanpage-->                
+                <?php foreach ($page_list as $item): ?>
+                    <div class="col-md-4 fanpage">
+                        <a href="#<?php echo $item['fanpage_id']; ?>"><img class="img-responsive" src="<?php if (!empty($item['cover'])) {echo $item['cover'];} else {echo base_url().'assets/uploads/fanpage.jpg';} ?>" /></a>
+                        <a href="#<?php echo $item['fanpage_id']; ?>"><h3><?php echo $item['name']; ?></h3></a>
+                    </div><!--/.fanpage-->                
+                <?php endforeach; ?>           
             </div>
+            <p class="help-block">Page render in: {elapsed_time}s</p>
             <!-- /.row -->
         </div>
         <!-- /#page-wrapper -->
@@ -84,7 +70,6 @@
 
     <!-- Custom Theme JavaScript -->
     <script src="<?php echo base_url(); ?>assets/js/sb-admin-2.js"></script>
-
 </body>
 
 </html>

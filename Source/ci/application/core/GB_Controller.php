@@ -19,7 +19,7 @@ class GB_Controller extends CI_Controller
         FacebookSession::setDefaultApplication($this->config->item('appid'), $this->config->item('appsecret'));
         
         //*** Check login
-        if (!$this->session->userdata('user_token')) {
+        if (!$this->session->userdata('user_id')) {
             redirect('login');
         }        
     }

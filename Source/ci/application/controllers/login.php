@@ -20,7 +20,7 @@ class Login extends CI_Controller {
         FacebookSession::setDefaultApplication('695082060564419', '093b0b371673a8b831dcc87d62fee7b0');//Will be set in constant
         
         //*** Check if user has logged
-        if ($this->session->userdata('user_token')) {
+        if ($this->session->userdata('user_id')) {
             redirect('fanpage/index');
         }
     }
@@ -41,14 +41,14 @@ class Login extends CI_Controller {
             $long_lived_session = $session->getLongLivedSession();
             $this->long_lived_token = $long_lived_session->getToken();
             
-            //*** Set session for user
-            $this->session->set_userdata('user_token', $session->getToken());
-            $this->session->set_userdata('user_id', $session->getUserId());
-            
             //*** Call api to get user info
             $request = new FacebookRequest($session, 'GET', '/me');
             $response = $request->execute();
             $user = $response->getGraphObject(GraphUser::className());
+            
+            //*** Set session for user
+            $this->session->set_userdata('user_token', $session->getToken());            
+            $this->session->set_userdata('user_id', $user->getId());
             
             if ( !$this->check_user_exist($user->getId())) {
                 // Register user
